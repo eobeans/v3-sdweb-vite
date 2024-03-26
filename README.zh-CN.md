@@ -1,24 +1,17 @@
 <div align="center">
-  <img alt="V3 Admin Vite Logo" width="120" height="120" src="./src/assets/layouts/logo.png">
-  <h1>V3 Admin Vite</h1>
+  <img alt="V3 SDWeb Vite Logo" width="120" height="120" src="./src/assets/layouts/logo.png">
+  <h1>V3 SDWeb Vite</h1>
   <span><a href="./README.md">English</a> | 中文</span>
 </div>
 
 ## ⚡ 简介
 
-V3 Admin Vite 是一个免费开源的中后台管理系统基础解决方案，基于 Vue3、TypeScript、Element Plus、Pinia 和 Vite 等主流技术
+V3 SDWeb Vite 是基于[v3-admin-vite](https://github.com/un-pany/v3-admin-vite)对接[stable-diffusion-webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui)接口的中后台管理系统基础解决方案，基于 Vue3、TypeScript、Element Plus、Pinia 和 Vite 等主流技术
 
-- Vue Cli 5.x 版: [v3-admin](https://github.com/un-pany/v3-admin)
-- Electron 桌面版: [v3-electron-vite](https://github.com/un-pany/v3-electron-vite)
+感谢 stable-diffusion-webui 作者[AUTOMATIC1111](https://github.com/AUTOMATIC1111)及其贡献者
+感谢 v3-admin-vite 原作者[pany](https://github.com/un-pany)及其贡献者
 
-国内仓库：[Gitee](https://gitee.com/un-pany/v3-admin-vite)
-
-## 📚 文档
-
-- 中文文档：[链接](https://juejin.cn/post/7089377403717287972)
-- 手摸手教程：[链接](https://juejin.cn/column/7207659644487139387)
-
-## 📺 在线预览
+## 📺 在线预览（v3-admin-vite）
 
 | 位置         | 账号            | 链接                                            |
 | ------------ | --------------- | ----------------------------------------------- |
@@ -58,7 +51,9 @@ V3 Admin Vite 是一个免费开源的中后台管理系统基础解决方案，
 - **多布局**：左侧、顶部、混合, 三种布局模式
 - **错误页面**: 403、404
 - **Dashboard**：根据不同用户显示不同的 Dashboard 页面
-- **其他内置功能**：SVG、动态侧边栏、动态面包屑、标签页快捷导航、Screenfull 全屏、自适应收缩侧边栏、Hook（Composables）
+- **其他内置功能**：SVG、动态侧边栏、动态面包屑、标签页快捷导航、Screenfull 全屏、自适应收缩侧边栏、Hook
+（Composables）
+- **AI绘画功能**：动态生成提示词并附带百度翻译；基于本地|内网穿透的txt2img文生图；支持远程[go.ai](https://www.goapi.ai/)的文生图
 
 ## 🚀 开发
 
@@ -69,10 +64,10 @@ V3 Admin Vite 是一个免费开源的中后台管理系统基础解决方案，
 3. pnpm 版本 8.x 或最新版
 
 # 克隆项目
-git clone https://github.com/un-pany/v3-admin-vite.git
+git clone https://github.com/eobeans/v3-sdweb-vite.git
 
 # 进入项目目录
-cd v3-admin-vite
+cd v3-sdweb-vite
 
 # 安装依赖
 pnpm i
@@ -113,6 +108,7 @@ pnpm test
 
 ## Git 提交规范参考
 
+- `[+]` 项目|模块初始化
 - `feat` 增加新的业务功能
 - `fix` 修复业务问题/BUG
 - `perf` 优化性能
@@ -133,31 +129,12 @@ pnpm test
 ![preview2.png](./src/assets/docs/preview2.png)
 ![preview3.png](./src/assets/docs/preview3.png)
 
-## 💕 贡献者
-
-感谢所有的贡献者！
-
-<a href="https://github.com/un-pany/v3-admin-vite/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=un-pany/v3-admin-vite" />
-</a>
-
 ## 💕 感谢 Star
 
 小项目获取 star 不易，如果你喜欢这个项目的话，欢迎支持一个 star！这是作者持续维护的唯一动力（小声：毕竟是免费的）
-
-## ☕ Donate
-
-[查看捐赠方式](https://github.com/un-pany/v3-admin-vite/issues/69)
-
-## 可有可无的群
-
-QQ 群：1014374415（左）&& 加我微信，拉你进微信群（右）
-
-![qq.png](./src/assets/docs/qq.png)
-![wechat.png](./src/assets/docs/wechat.png)
 
 ## 📄 License
 
 [MIT](./LICENSE)
 
-Copyright (c) 2022-present [pany](https://github.com/pany-ang)
+Copyright (c) 2024-present [eobeans](https://github.com/eobeans)
