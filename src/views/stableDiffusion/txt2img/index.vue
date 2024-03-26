@@ -77,7 +77,6 @@ const txt2ImgParams: Txt2ImgRequestData = reactive({
 
 const remoteType = ref("2")
 const imgSrc = ref("")
-const imgUrl = ref("")
 const imgList = ref([])
 const loading = ref(false)
 const xApiKey = ref("b68ce212fa3d6bcf0ecfd78c0c05d003052b185bf78bbbcde96062001e439476")
@@ -103,11 +102,8 @@ const getTxt2Img = async () => {
       } else {
         ElMessage.error(res.statusText)
       }
-      console.log("goapi.ai", res)
+      // console.log("goapi.ai", res)
     } else if (remoteType.value == "2") {
-      if (imgUrl.value) {
-        URL.revokeObjectURL(imgUrl.value)
-      }
       const res2: any = await localSdInstance.post("sdapi/v1/txt2img", txt2ImgParams)
       if (res2.status == 200) {
         imgList.value = res2.data.images.map((item: string) => {
@@ -116,8 +112,6 @@ const getTxt2Img = async () => {
           return base64
         })
         imgSrc.value = `data:image/jpeg;base64,${res2.data.images[0]}`
-        const blob = new Blob([res2.data.images[0]], { type: "jpeg" })
-        imgUrl.value = URL.createObjectURL(blob)
       }
     }
   } catch (err: any) {
@@ -228,6 +222,9 @@ if (modeEnv == "2") {
             <el-form-item label="反向提示词">
               <el-input v-model="negativePromptStr" />
             </el-form-item>
+            <el-form-item label="图片地址">
+              <div>{{ imgSrc }}</div>
+            </el-form-item>
           </el-form>
         </div>
         <div v-if="remoteType == '2'" class="mg-20">
@@ -271,10 +268,6 @@ if (modeEnv == "2") {
               <el-input v-model="negativePromptStr" />
             </el-form-item>
           </el-form>
-        </div>
-        <div v-if="remoteType == '1'" class="mg-20">图片地址：</div>
-        <div class="mg-20">
-          <div>{{ remoteType == "1" ? imgSrc : imgUrl }}</div>
         </div>
       </div>
       <div>
