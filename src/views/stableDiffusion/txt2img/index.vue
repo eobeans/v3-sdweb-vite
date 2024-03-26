@@ -77,6 +77,7 @@ const txt2ImgParams: Txt2ImgRequestData = reactive({
 
 const remoteType = ref("2")
 const imgSrc = ref("")
+const imgUrl = ref("")
 const imgList = ref([])
 const loading = ref(false)
 const xApiKey = ref("b68ce212fa3d6bcf0ecfd78c0c05d003052b185bf78bbbcde96062001e439476")
@@ -85,11 +86,17 @@ const getTxt2Img = async () => {
     loading.value = true
     if (remoteType.value == "1") {
       setXApiKey(xApiKey.value)
-      const headers = {
-        "X-API-KEY": xApiKey.value
-      }
-      // const res = await getTxt2ImgDataRemoteApi(txt2ImgRemoteParams)
-      const res: any = await axios.post("https://api.midjourneyapi.xyz/sd/txt2img", txt2ImgRemoteParams, { headers })
+      const remoteSdInstance = axios.create({
+        baseURL: "https://api.midjourneyapi.xyz/",
+        headers: {
+          "X-API-KEY": xApiKey.value,
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST",
+          "Access-Control-Allow-Headers":
+            "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+        }
+      })
+      const res: any = await remoteSdInstance.post("sd/txt2img", txt2ImgRemoteParams)
       if (res.status == 200) {
         imgList.value = res.data.output
         imgSrc.value = res.data.output[0]
@@ -98,6 +105,9 @@ const getTxt2Img = async () => {
       }
       console.log("goapi.ai", res)
     } else if (remoteType.value == "2") {
+      if (imgUrl.value) {
+        URL.revokeObjectURL(imgUrl.value)
+      }
       const res2: any = await localSdInstance.post("sdapi/v1/txt2img", txt2ImgParams)
       if (res2.status == 200) {
         imgList.value = res2.data.images.map((item: string) => {
@@ -106,6 +116,8 @@ const getTxt2Img = async () => {
           return base64
         })
         imgSrc.value = `data:image/jpeg;base64,${res2.data.images[0]}`
+        const blob = new Blob([res2.data.images[0]], { type: "jpeg" })
+        imgUrl.value = URL.createObjectURL(blob)
       }
     }
   } catch (err: any) {
@@ -131,7 +143,8 @@ const batch_number = ref(10)
 const beforeBatchGetTxt2Img = async () => {
   for (let i = 0; i < batch_number.value; i++) {
     generaterPromptStr()
-    txt2ImgParams.steps = Math.floor(Math.random() * (50 - 20 + 1)) + 20
+    // 步长为 25 - 50
+    txt2ImgParams.steps = Math.floor(Math.random() * (50 - 25 + 1)) + 25
     await getTxt2Img()
   }
 }
@@ -172,20 +185,22 @@ if (modeEnv == "2") {
 
 <template>
   <div v-loading="loading" class="app-container">
-    <div :class="isMobile ? 'flex-column justify-center' : 'flex-row'">
-      <el-select v-model="remoteType" class="mg-10" style="width: 180px; margin-right: 10px">
-        <el-option label="远程API" value="1" />
-        <el-option label="本地SD-API" value="2" />
-      </el-select>
-      <div class="mg-10"><el-button type="primary" @click="getTxt2Img">点击开始文生图</el-button></div>
-      <div class="mg-10"><el-button type="primary" @click="beforeGeneraterPromptStr">生成正向提示词</el-button></div>
-      <div class="mg-10">
-        <el-button type="primary" @click="beforeBatchGetTxt2Img">批量生成</el-button>
-      </div>
-      <!-- <el-button type="primary" @click="loginSD">测试登入SD</el-button> -->
-    </div>
-    <div :class="isMobile ? 'flex-column' : 'flex-row'">
+    <div :class="isMobile ? 'flex-col' : 'flex-row'">
       <div :style="isMobile ? 'width: 100%;' : 'width: 50%; margin-right: 40px;'">
+        <div :class="isMobile ? 'flex-col justify-center' : 'flex-row'">
+          <el-select v-model="remoteType" class="mg-10" style="width: 180px; margin-right: 10px">
+            <el-option label="远程API" value="1" />
+            <el-option label="本地SD-API" value="2" />
+          </el-select>
+          <div class="mg-10"><el-button type="primary" @click="getTxt2Img">点击开始文生图</el-button></div>
+          <div class="mg-10">
+            <el-button type="primary" @click="beforeGeneraterPromptStr">生成正向提示词</el-button>
+          </div>
+          <div v-if="remoteType == '2'" class="mg-10">
+            <el-button type="primary" @click="beforeBatchGetTxt2Img">批量生成</el-button>
+          </div>
+          <!-- <el-button type="primary" @click="loginSD">测试登入SD</el-button> -->
+        </div>
         <div v-if="remoteType == '1'" class="mg-20">
           <el-form>
             <el-form-item label="x-api-key">
@@ -193,6 +208,25 @@ if (modeEnv == "2") {
             </el-form-item>
             <el-form-item label="steps（步长）">
               <el-input v-model="txt2ImgRemoteParams.steps" />
+            </el-form-item>
+            <el-form-item label="提示词组合">
+              <el-select v-model="promptCombind" @change="beforeChangePromptCombind" aceholder="请选择提示词组合">
+                <el-option
+                  v-for="item in promptCombindOpts"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="提示词">
+              <el-input type="textarea" :rows="4" v-model="promptStr" />
+            </el-form-item>
+            <el-form-item label="提示词（中文）">
+              <div>{{ promptStrZh }}</div>
+            </el-form-item>
+            <el-form-item label="反向提示词">
+              <el-input v-model="negativePromptStr" />
             </el-form-item>
           </el-form>
         </div>
@@ -238,17 +272,14 @@ if (modeEnv == "2") {
             </el-form-item>
           </el-form>
         </div>
-        <div v-if="remoteType == '1'" class="mg-20">
-          图片地址：
-          <!-- <el-button v-if="imgSrc" class="mg-20" type="primary" @click="downloadImg">下载图片</el-button> -->
-        </div>
-        <div v-if="remoteType == '1'" class="mg-20">
-          <div>{{ imgSrc }}</div>
+        <div v-if="remoteType == '1'" class="mg-20">图片地址：</div>
+        <div class="mg-20">
+          <div>{{ remoteType == "1" ? imgSrc : imgUrl }}</div>
         </div>
       </div>
       <div>
-        <div class="flex-column justify-center" style="width: 100%">
-          <el-image style="width: 100%; max-width: 512px" :src="imgSrc" fit="scale-down" :preview-src-list="imgList" />
+        <div class="flex-col justify-center">
+          <el-image style="width: 512px; height: 768px" :src="imgSrc" fit="fill" :preview-src-list="imgList" />
         </div>
       </div>
     </div>
@@ -259,6 +290,7 @@ if (modeEnv == "2") {
 .mg-10 {
   margin: 10px;
 }
+
 .mg-20 {
   margin: 20px;
 }

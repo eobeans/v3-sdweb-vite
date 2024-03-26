@@ -4,8 +4,9 @@ import promptObj from "../object.json"
 
 export function usePrompt() {
   const promptStr = ref("")
-  const promptCombind = ref("6")
+  const promptCombind = ref("3")
   const promptCombindOpts = ref<promptCombindOpts[]>([
+    { label: "1风格、1画质、1特效、1视角、2物品", value: "2" },
     { label: "1风格、1画质、1特效、1视角、4物品", value: "4" },
     { label: "1风格、1画质、1特效、1视角、6物品", value: "6" },
     { label: "1风格、1画质、1特效、1视角、8物品", value: "8" },
@@ -21,9 +22,8 @@ export function usePrompt() {
   const cameraList = promptObj.camera
 
   // ** 提示词组合 */
-  const generaterPromptStr = () => {
-    const val = promptCombind.value
-    if (val == "4" || val == "6" || val == "8") {
+  const changePromptCombind = (val: string) => {
+    if (val == "2" || val == "4" || val == "6" || val == "8") {
       const promptList = [
         styleList[Math.floor(Math.random() * styleList.length)],
         qualityList[Math.floor(Math.random() * qualityList.length)],
@@ -50,32 +50,10 @@ export function usePrompt() {
   }
 
   // ** 提示词组合 */
-  const changePromptCombind = (val: string) => {
-    if (val == "4" || val == "6" || val == "8") {
-      const promptList = [
-        styleList[Math.floor(Math.random() * styleList.length)],
-        qualityList[Math.floor(Math.random() * qualityList.length)],
-        effectList[Math.floor(Math.random() * effectList.length)],
-        cameraList[Math.floor(Math.random() * cameraList.length)]
-      ]
-      for (let i = 0; i < Number(val); i++) {
-        promptList.push(objectList[Math.floor(Math.random() * objectList.length)])
-      }
-      promptStr.value = promptList.join(",")
-    } else if (val == "1" || val == "3" || val == "5") {
-      const promptList = [
-        styleList[Math.floor(Math.random() * styleList.length)],
-        qualityList[Math.floor(Math.random() * qualityList.length)],
-        effectList[Math.floor(Math.random() * effectList.length)],
-        cameraList[Math.floor(Math.random() * cameraList.length)]
-      ]
-      for (let i = 0; i < Number(val); i++) {
-        promptList.push(objectList[Math.floor(Math.random() * objectList.length)])
-      }
-      promptList.sort()
-      promptStr.value = promptList.join(",")
-    }
+  const generaterPromptStr = () => {
+    const val = promptCombind.value
+    changePromptCombind(val)
   }
 
-  return { promptStr, promptCombind, promptCombindOpts, generaterPromptStr, changePromptCombind }
+  return { promptStr, promptCombind, promptCombindOpts, changePromptCombind, generaterPromptStr }
 }
