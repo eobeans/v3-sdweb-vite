@@ -4,6 +4,18 @@ import { type Txt2ImgRequestData, type SDModelList } from "@/api/stable-diffusio
 import { getSDAuth } from "@/utils/cache/local-storage"
 import { ElMessage } from "element-plus"
 
+interface vaeOpt {
+  filename: string
+  model_name: string
+}
+
+interface loraOpt {
+  alias?: string
+  name: string
+  path: string
+  metadata: object
+}
+
 export function useStableDiffusion() {
   const txt2ImgParams: Txt2ImgRequestData = reactive({
     width: "512",
@@ -23,6 +35,13 @@ export function useStableDiffusion() {
     negative_prompt: "nsfw",
     model_id: "midjourney"
   })
+
+  const loraModel = ref([])
+  const loraStr = ref("")
+  const samplerOpts: dict[] = reactive([
+    { label: "Euler", value: "Euler" },
+    { label: "DPM++ 2M Karras", value: "DPM++ 2M Karras" }
+  ])
   const imgSrc = ref("")
   const imgList = ref([])
   const loading = ref(false)
@@ -97,16 +116,20 @@ export function useStableDiffusion() {
 
   // 获取当前全局配置-如：当前模型列表等
   const checkpointModel = ref("")
+  const vaeModel = ref("")
   const getSDOptions = async () => {
     const res: any = await localSdInstance.get("sdapi/v1/options")
     checkpointModel.value = res.data.sd_model_checkpoint
+    vaeModel.value = res.data.sd_vae
   }
 
   // 获取模型列表
-  const modelOpts = ref<SDModelList[]>([])
+  const modelOpts = ref<dict[]>([])
   const getSDModelOpts = async () => {
     const res = await localSdInstance.get("sdapi/v1/sd-models")
-    modelOpts.value = res.data
+    modelOpts.value = res.data.map((item: SDModelList) => {
+      return { label: item.title, value: item.title }
+    })
   }
 
   // 更改当前全局配置
@@ -115,12 +138,36 @@ export function useStableDiffusion() {
     return res
   }
 
+  // 获取vae列表
+  const vaeOpts = ref<dict[]>([])
+  const getVaeOpts = async () => {
+    const res = await localSdInstance.get("sdapi/v1/sd-vae")
+    vaeOpts.value = res.data.map((item: vaeOpt) => {
+      return { label: item.model_name, value: item.model_name }
+    })
+  }
+
+  // 获取Lora列表
+  const loraOpts = ref<dict[]>([])
+  const getLoraOpts = async () => {
+    const res = await localSdInstance.get("sdapi/v1/loras")
+    loraOpts.value = res.data.map((item: loraOpt) => {
+      return { label: item.name, value: item.name }
+    })
+  }
+
   return {
     localSdInstance,
     txt2ImgParams,
     txt2ImgRemoteParams,
+    loraModel,
+    loraStr,
+    samplerOpts,
     checkpointModel,
     modelOpts,
+    vaeModel,
+    vaeOpts,
+    loraOpts,
     imgSrc,
     imgList,
     getRemoteTxt2Img,
@@ -128,6 +175,8 @@ export function useStableDiffusion() {
     downloadImg,
     getSDOptions,
     getSDModelOpts,
-    postSDModelOpts
+    postSDModelOpts,
+    getVaeOpts,
+    getLoraOpts
   }
 }

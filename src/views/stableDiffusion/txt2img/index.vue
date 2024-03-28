@@ -1,17 +1,10 @@
 <script lang="ts" setup>
-import { ref, reactive } from "vue"
+import { ref } from "vue"
 import { ElMessage } from "element-plus"
 import { useDevice } from "@/hooks/useDevice"
 import { useTranslate } from "./hooks/useTranslate"
 import { usePrompt } from "./hooks/usePrompt"
 import { useStableDiffusion } from "./hooks/useStableDiffusion"
-
-const { isMobile } = useDevice()
-
-const samplerOpts: any = reactive([
-  { label: "Euler", value: "Euler" },
-  { label: "DPM++ 2M Karras", value: "DPM++ 2M Karras" }
-])
 
 // 百度翻译
 const { promptStrZh, translatePrompt } = useTranslate()
@@ -26,28 +19,46 @@ const {
   txt2ImgRemoteParams,
   checkpointModel,
   modelOpts,
+  samplerOpts,
+  vaeModel,
+  vaeOpts,
+  loraModel,
+  loraStr,
   imgSrc,
   imgList,
+  loraOpts,
   getRemoteTxt2Img,
   getTxt2Img,
   getSDOptions,
   getSDModelOpts,
-  postSDModelOpts
+  postSDModelOpts,
+  getVaeOpts,
+  getLoraOpts
 } = useStableDiffusion()
 
 getSDOptions()
 getSDModelOpts()
+getVaeOpts()
+getLoraOpts()
 
 // 更改提示词组合方式
 const beforeChangePromptCombind = (val: string) => {
   changePromptCombind(val)
   translatePrompt(promptStr.value)
+  if (loraStr.value) {
+    promptStr.value += loraStr.value
+    promptStrZh.value += loraStr.value
+  }
 }
 
 // 生成提示词
 const beforeGeneraterPromptStr = () => {
   generaterPromptStr()
   translatePrompt(promptStr.value)
+  if (loraStr.value) {
+    promptStr.value += loraStr.value
+    promptStrZh.value += loraStr.value
+  }
 }
 beforeGeneraterPromptStr()
 
@@ -74,10 +85,11 @@ const beforeGetTxt2Img = async () => {
   }
 }
 
-const modelChange = async (val: string) => {
+// 更改模型或者vae
+const modelChange = async () => {
   try {
     loading.value = true
-    const params = { sd_model_checkpoint: val }
+    const params = { sd_model_checkpoint: checkpointModel.value, sd_vae: vaeModel.value }
     const res = await postSDModelOpts(params)
     if (res.status == 200) {
       ElMessage.success("操作成功")
@@ -85,6 +97,32 @@ const modelChange = async (val: string) => {
   } finally {
     loading.value = false
   }
+}
+
+// 选择lora
+const loraWeight = ref(1)
+const selectLora = () => {
+  const val = loraModel.value
+  if (val.length !== 0) {
+    // console.log(val) // <lora:RMSDXL_Creative:1>
+    const rate = Math.floor((loraWeight.value / val.length) * 100) / 100
+    loraStr.value = val
+      .map((str) => {
+        return `<lora:${str}:${rate}>`
+      })
+      .join(",")
+  } else {
+    loraStr.value = ""
+  }
+  const oldPrompt = promptStr.value
+    .split(",")
+    .filter((str) => {
+      return str && !str.includes("<lora:")
+    })
+    .join(",")
+  promptStr.value = oldPrompt
+  promptStr.value += ","
+  promptStr.value += loraStr.value
 }
 
 // 页面控制
@@ -98,12 +136,25 @@ if (modeEnv == "2") {
 const beforeBatchGetTxt2Img = async () => {
   for (let i = 0; i < batch_number.value; i++) {
     generaterPromptStr()
+    if (loraStr.value) {
+      promptStr.value += loraStr.value
+      promptStrZh.value += loraStr.value
+    }
     txt2ImgParams.steps = Math.floor(Math.random() * (50 - 25 + 1)) + 25 // 步长为 25 - 50
     txt2ImgParams.prompt = promptStr.value
     txt2ImgParams.negative_prompt = negativePromptStr.value
     await getTxt2Img()
   }
 }
+
+const reomteTypeChange = () => {
+  loraModel.value = []
+  loraStr.value = ""
+  generaterPromptStr()
+  translatePrompt(promptStr.value)
+}
+
+const { isMobile } = useDevice()
 </script>
 
 <template>
@@ -111,7 +162,12 @@ const beforeBatchGetTxt2Img = async () => {
     <div :class="isMobile ? 'flex-col' : 'flex-row'">
       <div :style="isMobile ? 'width: 100%;' : 'width: 50%; margin-right: 40px;'">
         <div :class="isMobile ? 'flex-col justify-center' : 'flex-row'">
-          <el-select v-model="remoteType" class="mg-10" style="width: 180px; margin-right: 10px">
+          <el-select
+            v-model="remoteType"
+            @change="reomteTypeChange"
+            class="mg-10"
+            style="width: 180px; margin-right: 10px"
+          >
             <el-option label="远程API" value="1" />
             <el-option label="本地SD-API" value="2" />
           </el-select>
@@ -150,51 +206,87 @@ const beforeBatchGetTxt2Img = async () => {
             <el-form-item label="反向提示词">
               <el-input v-model="negativePromptStr" />
             </el-form-item>
-            <el-form-item label="图片地址">
-              <div>{{ imgSrc }}</div>
-            </el-form-item>
           </el-form>
         </div>
         <div v-if="remoteType == '2'" class="mg-20">
-          <el-form label-width="140px" label-position="left">
-            <el-form-item label="模型">
-              <el-select v-model="checkpointModel" @change="modelChange" placeholder="请选择模型">
-                <el-option v-for="item in modelOpts" :key="item.title" :label="item.title" :value="item.title" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="生产批次">
-              <el-input-number v-model="batch_number" :min="1" :max="modeEnv == '2' ? 10 : 10000" />
-            </el-form-item>
-            <el-form-item label="采样器">
-              <el-select v-model="txt2ImgParams.sampler_index" style="width: 220px" placeholder="请选择采样器">
-                <el-option v-for="item in samplerOpts" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="数量/批次">
-              <el-input-number v-model="txt2ImgParams.batch_size" :min="1" :max="4" />
-            </el-form-item>
-            <el-form-item label="步长">
-              <el-input-number v-model="txt2ImgParams.steps" :min="20" :max="50" />
-            </el-form-item>
-            <el-form-item label="提示词组合">
-              <el-select v-model="promptCombind" @change="beforeChangePromptCombind" aceholder="请选择提示词组合">
-                <el-option
-                  v-for="item in promptCombindOpts"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="提示词">
-              <el-input type="textarea" :rows="4" v-model="promptStr" />
-            </el-form-item>
-            <el-form-item label="提示词（中文）">
-              <div>{{ promptStrZh }}</div>
-            </el-form-item>
-            <el-form-item label="反向提示词">
-              <el-input v-model="negativePromptStr" />
-            </el-form-item>
+          <el-form label-width="auto" label-position="left">
+            <el-row :gutter="20">
+              <el-col :span="24">
+                <el-form-item label="模型">
+                  <el-select v-model="checkpointModel" @change="modelChange" placeholder="请选择模型">
+                    <el-option v-for="op in modelOpts" :key="op.label" :label="op.label" :value="op.value" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="24">
+                <el-form-item label="Vae">
+                  <el-select v-model="vaeModel" @change="modelChange" placeholder="请选择Vae">
+                    <el-option v-for="op in vaeOpts" :key="op.label" :label="op.label" :value="op.value" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="isMobile ? 24 : 12">
+                <el-form-item label="Lora权重">
+                  <el-input-number v-model="loraWeight" :min="0.01" :max="1" :stpe="0.01" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="24">
+                <el-form-item label="Lora">
+                  <el-select v-model="loraModel" @change="selectLora" multiple clearable placeholder="请选择Lora">
+                    <el-option v-for="op in loraOpts" :key="op.label" :label="op.label" :value="op.value" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="isMobile ? 24 : 12">
+                <el-form-item label="生产批次">
+                  <el-input-number v-model="batch_number" :min="1" :max="modeEnv == '2' ? 10 : 10000" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="isMobile ? 24 : 12">
+                <el-form-item label="数量/批次">
+                  <el-input-number v-model="txt2ImgParams.batch_size" :min="1" :max="4" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="isMobile ? 24 : 12">
+                <el-form-item label="采样器">
+                  <el-select v-model="txt2ImgParams.sampler_index" placeholder="请选择采样器">
+                    <el-option v-for="item in samplerOpts" :key="item.value" :label="item.label" :value="item.value" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="isMobile ? 24 : 12">
+                <el-form-item label="步长">
+                  <el-input-number v-model="txt2ImgParams.steps" :min="20" :max="50" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="24">
+                <el-form-item label="提示词组合">
+                  <el-select v-model="promptCombind" @change="beforeChangePromptCombind" aceholder="请选择提示词组合">
+                    <el-option
+                      v-for="item in promptCombindOpts"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value"
+                    />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="24">
+                <el-form-item label="提示词">
+                  <el-input type="textarea" :rows="4" v-model="promptStr" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="24">
+                <el-form-item label="提示词（中文）">
+                  <div>{{ promptStrZh }}{{ loraStr ? "," + loraStr : null }}</div>
+                </el-form-item>
+              </el-col>
+              <el-col :span="24">
+                <el-form-item label="反向提示词">
+                  <el-input v-model="negativePromptStr" />
+                </el-form-item>
+              </el-col>
+            </el-row>
           </el-form>
         </div>
       </div>
