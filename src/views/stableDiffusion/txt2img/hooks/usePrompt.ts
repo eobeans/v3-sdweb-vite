@@ -4,6 +4,7 @@ import promptObj from "../object.json"
 
 export function usePrompt() {
   const promptStr = ref("")
+  const negativePromptStr = ref("nsfw")
   const promptCombind = ref("3")
   const promptCombindOpts = ref<promptCombindOpts[]>([
     { label: "1风格、1画质、1特效、1视角、2物品", value: "2" },
@@ -55,5 +56,5 @@ export function usePrompt() {
     changePromptCombind(val)
   }
 
-  return { promptStr, promptCombind, promptCombindOpts, changePromptCombind, generaterPromptStr }
+  return { promptStr, negativePromptStr, promptCombind, promptCombindOpts, changePromptCombind, generaterPromptStr }
 }

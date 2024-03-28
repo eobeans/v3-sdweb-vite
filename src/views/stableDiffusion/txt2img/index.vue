@@ -1,13 +1,10 @@
 <script lang="ts" setup>
 import { ref, reactive } from "vue"
-import { type Txt2ImgRequestData, type SDModelList } from "@/api/stable-diffusion/types/txt2img"
-import { setXApiKey } from "@/utils/cache/cookies"
-import axios from "axios"
 import { ElMessage } from "element-plus"
-import { getSDAuth } from "@/utils/cache/local-storage"
 import { useDevice } from "@/hooks/useDevice"
 import { useTranslate } from "./hooks/useTranslate"
 import { usePrompt } from "./hooks/usePrompt"
+import { useStableDiffusion } from "./hooks/useStableDiffusion"
 
 const { isMobile } = useDevice()
 
@@ -20,7 +17,26 @@ const samplerOpts: any = reactive([
 const { promptStrZh, translatePrompt } = useTranslate()
 
 // 提示词
-const { promptStr, promptCombind, promptCombindOpts, generaterPromptStr, changePromptCombind } = usePrompt()
+const { promptStr, negativePromptStr, promptCombind, promptCombindOpts, generaterPromptStr, changePromptCombind } =
+  usePrompt()
+
+// stable-diffusion
+const {
+  txt2ImgParams,
+  txt2ImgRemoteParams,
+  checkpointModel,
+  modelOpts,
+  imgSrc,
+  imgList,
+  getRemoteTxt2Img,
+  getTxt2Img,
+  getSDOptions,
+  getSDModelOpts,
+  postSDModelOpts
+} = useStableDiffusion()
+
+getSDOptions()
+getSDModelOpts()
 
 // 更改提示词组合方式
 const beforeChangePromptCombind = (val: string) => {
@@ -28,91 +44,28 @@ const beforeChangePromptCombind = (val: string) => {
   translatePrompt(promptStr.value)
 }
 
-// 点击生成图片
+// 生成提示词
 const beforeGeneraterPromptStr = () => {
   generaterPromptStr()
   translatePrompt(promptStr.value)
 }
 beforeGeneraterPromptStr()
 
-// 负面提示词
-const negativePromptStr = ref("nsfw")
-
-// SD接口服务
-const sdAuth = getSDAuth()
-const localSdInstance = axios.create({
-  baseURL: "/localSd",
-  timeout: 100000,
-  auth: {
-    username: sdAuth.username,
-    password: sdAuth.password
-  },
-  headers: {
-    "Access-Control-Allow-Origin": "*", // "http://localhost:3333",
-    "Access-Control-Allow-Methods": "GET, POST",
-    "Access-Control-Allow-Headers": "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
-  }
-})
-
-/** 文生图请求参数 */
-const txt2ImgRemoteParams: Txt2ImgRequestData = reactive({
-  width: "512",
-  height: "768",
-  steps: 32,
-  prompt: promptStr,
-  negative_prompt: negativePromptStr,
-  model_id: "midjourney"
-})
-
-const txt2ImgParams: Txt2ImgRequestData = reactive({
-  width: "512",
-  height: "768",
-  steps: 32,
-  n_iter: 1,
-  batch_size: 1,
-  sampler_index: "Euler",
-  prompt: promptStr,
-  negative_prompt: negativePromptStr
-})
-
-const remoteType = ref("2")
-const imgSrc = ref("")
-const imgList = ref([])
 const loading = ref(false)
+const remoteType = ref("2")
 const xApiKey = ref("b68ce212fa3d6bcf0ecfd78c0c05d003052b185bf78bbbcde96062001e439476")
-const getTxt2Img = async () => {
+// 点击开始文生图
+const beforeGetTxt2Img = async () => {
   try {
     loading.value = true
     if (remoteType.value == "1") {
-      setXApiKey(xApiKey.value)
-      const remoteSdInstance = axios.create({
-        baseURL: "https://api.midjourneyapi.xyz/",
-        headers: {
-          "X-API-KEY": xApiKey.value,
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET, POST",
-          "Access-Control-Allow-Headers":
-            "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
-        }
-      })
-      const res: any = await remoteSdInstance.post("sd/txt2img", txt2ImgRemoteParams)
-      if (res.status == 200) {
-        imgList.value = res.data.output
-        imgSrc.value = res.data.output[0]
-      } else {
-        ElMessage.error(res.statusText)
-      }
-      // console.log("goapi.ai", res)
+      txt2ImgRemoteParams.prompt = promptStr.value
+      txt2ImgRemoteParams.negative_prompt = negativePromptStr.value
+      await getRemoteTxt2Img(xApiKey.value)
     } else if (remoteType.value == "2") {
-      const res2: any = await localSdInstance.post("sdapi/v1/txt2img", txt2ImgParams)
-      if (res2.status == 200) {
-        imgList.value = res2.data.images.map((item: string) => {
-          const base64 = `data:image/jpeg;base64,${item}`
-          downloadImg(base64)
-          return base64
-        })
-        imgSrc.value = `data:image/jpeg;base64,${res2.data.images[0]}`
-      }
+      txt2ImgParams.prompt = promptStr.value
+      txt2ImgParams.negative_prompt = negativePromptStr.value
+      await getTxt2Img()
     }
   } catch (err: any) {
     ElMessage.error(err)
@@ -121,47 +74,11 @@ const getTxt2Img = async () => {
   }
 }
 
-// 图片下载
-const downloadImg = (base64: string) => {
-  const now = new Date()
-  const a = document.createElement("a")
-  a.href = base64
-  a.download = String(now.getTime())
-  document.body.appendChild(a)
-  a.click()
-  a.remove()
-}
-
-// 点击批量生成
-const batch_number = ref(10)
-const beforeBatchGetTxt2Img = async () => {
-  for (let i = 0; i < batch_number.value; i++) {
-    generaterPromptStr()
-    // 步长为 25 - 50
-    txt2ImgParams.steps = Math.floor(Math.random() * (50 - 25 + 1)) + 25
-    await getTxt2Img()
-  }
-}
-
-// 获取模型列表
-const checkpointModel = ref("")
-const getSDOptions = async () => {
-  const res: any = await localSdInstance.get("sdapi/v1/options")
-  checkpointModel.value = res.data.sd_model_checkpoint
-}
-getSDOptions()
-const modelOpts = ref<SDModelList[]>([])
-const getSDModelOpts = async () => {
-  const res = await localSdInstance.get("sdapi/v1/sd-models")
-  modelOpts.value = res.data
-}
-getSDModelOpts()
-
 const modelChange = async (val: string) => {
   try {
     loading.value = true
     const params = { sd_model_checkpoint: val }
-    const res = await localSdInstance.post("sdapi/v1/options", params)
+    const res = await postSDModelOpts(params)
     if (res.status == 200) {
       ElMessage.success("操作成功")
     }
@@ -171,9 +88,21 @@ const modelChange = async (val: string) => {
 }
 
 // 页面控制
+const batch_number = ref(10)
 const modeEnv = import.meta.env.VITE_NODE_ENV == "production" ? "2" : "1"
 if (modeEnv == "2") {
   batch_number.value = 1
+}
+
+// 点击批量生成
+const beforeBatchGetTxt2Img = async () => {
+  for (let i = 0; i < batch_number.value; i++) {
+    generaterPromptStr()
+    txt2ImgParams.steps = Math.floor(Math.random() * (50 - 25 + 1)) + 25 // 步长为 25 - 50
+    txt2ImgParams.prompt = promptStr.value
+    txt2ImgParams.negative_prompt = negativePromptStr.value
+    await getTxt2Img()
+  }
 }
 </script>
 
@@ -186,14 +115,13 @@ if (modeEnv == "2") {
             <el-option label="远程API" value="1" />
             <el-option label="本地SD-API" value="2" />
           </el-select>
-          <div class="mg-10"><el-button type="primary" @click="getTxt2Img">点击开始文生图</el-button></div>
+          <div class="mg-10"><el-button type="primary" @click="beforeGetTxt2Img">点击开始文生图</el-button></div>
           <div class="mg-10">
             <el-button type="primary" @click="beforeGeneraterPromptStr">生成正向提示词</el-button>
           </div>
           <div v-if="remoteType == '2'" class="mg-10">
             <el-button type="primary" @click="beforeBatchGetTxt2Img">批量生成</el-button>
           </div>
-          <!-- <el-button type="primary" @click="loginSD">测试登入SD</el-button> -->
         </div>
         <div v-if="remoteType == '1'" class="mg-20">
           <el-form>
