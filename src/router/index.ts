@@ -300,6 +300,14 @@ export const dynamicRoutes: RouteRecordRaw[] = [
     },
     children: [
       {
+        path: "imgDB",
+        component: () => import("@/views/stableDiffusion/imgDB/index.vue"),
+        name: "imgDBPermission",
+        meta: {
+          title: "图库"
+        }
+      },
+      {
         path: "txt2img",
         component: () => import("@/views/stableDiffusion/txt2img/index.vue"),
         name: "Txt2ImgPermission",

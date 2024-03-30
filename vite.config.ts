@@ -49,6 +49,13 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/localSd/, "")
         },
+        "/images": {
+          target: "http://121.37.200.249:3334",
+          ws: true,
+          /** 是否允许跨域 */
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/images/, "")
+        },
         "/api/v1": {
           target: "https://mock.mengxuegu.com/mock/63218b5fb4c53348ed2bc212",
           ws: true,
