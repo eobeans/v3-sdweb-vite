@@ -50,7 +50,8 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
           rewrite: (path) => path.replace(/^\/localSd/, "")
         },
         "/imageDB": {
-          target: "http://127.0.0.1:5000",
+          // target: "http://127.0.0.1:5000",
+          target: "http://121.37.200.249:5000",
           ws: true,
           /** 是否允许跨域 */
           changeOrigin: true,
