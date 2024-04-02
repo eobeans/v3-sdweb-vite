@@ -4,7 +4,7 @@ import type * as Login from "./types/login"
 /** 登录并返回 Token */
 export function loginApi(data: LoginRequestData) {
   return request<Login.LoginResponseData>({
-    url: "users/login",
+    url: "system/login",
     method: "post",
     data
   })
@@ -13,7 +13,7 @@ export function loginApi(data: LoginRequestData) {
 /** 获取用户详情 */
 export function getUserInfoApi() {
   return request<Login.UserInfoResponseData>({
-    url: "users/info",
+    url: "system/info",
     method: "get"
   })
 }

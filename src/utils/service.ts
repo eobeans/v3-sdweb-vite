@@ -43,7 +43,7 @@ function createService() {
         return Promise.reject(new Error("非本系统的接口"))
       }
       switch (code) {
-        case 0:
+        case 200:
           // 本系统采用 code === 0 来表示没有业务错误
           return apiData
         case 401:

@@ -20,8 +20,7 @@ const loading = ref(false)
 /** 登录表单数据 */
 const loginFormData: LoginRequestData = reactive({
   username: "eobeans",
-  password: "",
-  code: ""
+  password: ""
 })
 /** 登录表单校验规则 */
 const loginFormRules: FormRules = {
@@ -37,18 +36,11 @@ const handleLogin = () => {
   loginFormRef.value?.validate((valid: boolean, fields) => {
     if (valid) {
       loading.value = true
-      const fakeLoginFormData: LoginRequestData = {
-        username: "admin",
-        password: "12345678"
-      }
       useUserStore()
-        .login(fakeLoginFormData)
+        .login(loginFormData)
         .then(() => {
           router.push({ path: "/" })
           useStableDiffusionStore().login(loginFormData)
-        })
-        .catch(() => {
-          loginFormData.password = ""
         })
         .finally(() => {
           loading.value = false
