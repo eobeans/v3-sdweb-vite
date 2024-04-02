@@ -3,6 +3,7 @@ import { ref, reactive } from "vue"
 import axios from "axios"
 import { useImgDB } from "./hooks/useImgDB"
 import { useDevice } from "@/hooks/useDevice"
+import { getSDAuth } from "@/utils/cache/local-storage"
 
 const { isMobile } = useDevice()
 const { getImgNameList, addImgScore } = useImgDB()
@@ -42,8 +43,9 @@ const getImgList = async () => {
 }
 getImgList()
 
+const sdAuth: SDAuthParams = getSDAuth()
 const scoreData = reactive({
-  username: "eobeans",
+  username: sdAuth.username,
   filename: "",
   score: 0
 })
