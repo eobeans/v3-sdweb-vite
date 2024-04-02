@@ -38,7 +38,7 @@ export function useStableDiffusion() {
 
   const loraModel = ref([])
   const loraStr = ref("")
-  const samplerOpts: dict[] = reactive([
+  const samplerOpts: Dict[] = reactive([
     { label: "Euler", value: "Euler" },
     { label: "DPM++ 2M Karras", value: "DPM++ 2M Karras" }
   ])
@@ -124,7 +124,7 @@ export function useStableDiffusion() {
   }
 
   // 获取模型列表
-  const modelOpts = ref<dict[]>([])
+  const modelOpts = ref<Dict[]>([])
   const getSDModelOpts = async () => {
     const res = await localSdInstance.get("sdapi/v1/sd-models")
     modelOpts.value = res.data.map((item: SDModelList) => {
@@ -139,7 +139,7 @@ export function useStableDiffusion() {
   }
 
   // 获取vae列表
-  const vaeOpts = ref<dict[]>([])
+  const vaeOpts = ref<Dict[]>([])
   const getVaeOpts = async () => {
     const res = await localSdInstance.get("sdapi/v1/sd-vae")
     vaeOpts.value = res.data.map((item: vaeOpt) => {
@@ -148,7 +148,7 @@ export function useStableDiffusion() {
   }
 
   // 获取Lora列表
-  const loraOpts = ref<dict[]>([])
+  const loraOpts = ref<Dict[]>([])
   const getLoraOpts = async () => {
     const res = await localSdInstance.get("sdapi/v1/loras")
     loraOpts.value = res.data.map((item: loraOpt) => {

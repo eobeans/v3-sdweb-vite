@@ -43,7 +43,7 @@ const getImgList = async () => {
 }
 getImgList()
 
-const sdAuth: SDAuthParams = getSDAuth()
+const sdAuth: LoginRequestData = getSDAuth()
 const scoreData = reactive({
   username: sdAuth.username,
   filename: "",

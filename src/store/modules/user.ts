@@ -6,7 +6,6 @@ import { useSettingsStore } from "./settings"
 import { getToken, removeToken, setToken, removeXApiKey } from "@/utils/cache/cookies"
 import { resetRouter } from "@/router"
 import { loginApi, getUserInfoApi } from "@/api/login"
-import { type LoginRequestData } from "@/api/login/types/login"
 import routeSettings from "@/config/route"
 
 export const useUserStore = defineStore("user", () => {
@@ -18,8 +17,8 @@ export const useUserStore = defineStore("user", () => {
   const settingsStore = useSettingsStore()
 
   /** 登录 */
-  const login = async ({ username, password, code }: LoginRequestData) => {
-    const { data } = await loginApi({ username, password, code })
+  const login = async ({ username, password }: LoginRequestData) => {
+    const { data } = await loginApi({ username, password })
     setToken(data.token)
     token.value = data.token
   }

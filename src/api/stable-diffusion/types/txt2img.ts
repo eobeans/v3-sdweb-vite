@@ -27,12 +27,6 @@ export interface Txt2ImgRemoteResponseData {
   status: string
 }
 
-export interface SdLoginRequestData {
-  username: string
-  password: string
-  code?: string
-}
-
 export interface SDModelList {
   title: string
   model_name?: string

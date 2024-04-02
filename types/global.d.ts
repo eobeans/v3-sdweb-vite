@@ -1,9 +1,11 @@
-interface dict {
+// 字典参数
+interface Dict {
   label: string
   value: string
 }
 
-interface SDAuthParams {
+// 登入参数
+interface LoginRequestData {
   username: string
   password: string
 }
