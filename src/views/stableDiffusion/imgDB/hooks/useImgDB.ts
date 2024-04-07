@@ -29,18 +29,11 @@ export function useImgDB() {
   // 获取图片列表
   const getImgNameList = async () => {
     try {
-      const cacheKey = "v3-sdweb-vite-filename-list-key"
-      const jsonstr = localStorage.getItem(cacheKey)
-      const json = JSON.parse(jsonstr ?? "[]")
-      if (json.length !== 0) {
-        return json
-      }
       const res: any = await imgDBInstance.get("api/imgServer/list")
       if (res.status == 200) {
         const filenameList = res.data.data.map((item: imgListData) => {
           return item.filename
         })
-        localStorage.setItem(cacheKey, JSON.stringify(filenameList))
         return filenameList
       }
     } catch (err: any) {

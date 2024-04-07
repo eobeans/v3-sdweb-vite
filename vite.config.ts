@@ -50,8 +50,8 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
           rewrite: (path) => path.replace(/^\/localSd/, "")
         },
         "/imageDB": {
-          target: "http://127.0.0.1:5000",
-          // target: "http://121.37.200.249:5000",
+          // target: "http://127.0.0.1:5000",
+          target: "http://121.37.200.249:5000",
           ws: true,
           /** 是否允许跨域 */
           changeOrigin: true,
@@ -66,7 +66,8 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
         },
         "/api/v1": {
           // target: "https://mock.mengxuegu.com/mock/63218b5fb4c53348ed2bc212",
-          target: "http://127.0.0.1:5000",
+          // target: "http://127.0.0.1:5000",
+          target: "http://121.37.200.249:5000",
           ws: true,
           /** 是否允许跨域 */
           changeOrigin: true,
