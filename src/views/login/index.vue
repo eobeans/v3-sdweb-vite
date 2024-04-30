@@ -63,38 +63,23 @@ const handleLogin = () => {
       <div class="content">
         <el-form ref="loginFormRef" :model="loginFormData" :rules="loginFormRules" @keyup.enter="handleLogin">
           <el-form-item prop="username">
-            <el-input
-              v-model.trim="loginFormData.username"
-              placeholder="用户名"
-              type="text"
-              tabindex="1"
-              :prefix-icon="User"
-              size="large"
-            />
+            <el-input v-model.trim="loginFormData.username" placeholder="用户名" type="text" tabindex="1"
+              :prefix-icon="User" size="large" />
           </el-form-item>
           <el-form-item prop="password">
-            <el-input
-              v-model.trim="loginFormData.password"
-              placeholder="密码"
-              type="password"
-              tabindex="2"
-              :prefix-icon="Lock"
-              size="large"
-              show-password
-              @blur="handleBlur"
-              @focus="handleFocus"
-            />
+            <el-input v-model.trim="loginFormData.password" placeholder="密码" type="password" tabindex="2"
+              :prefix-icon="Lock" size="large" show-password @blur="handleBlur" @focus="handleFocus" />
           </el-form-item>
           <el-button :loading="loading" type="primary" size="large" @click.prevent="handleLogin">登 录</el-button>
         </el-form>
       </div>
     </div>
     <div class="login-footer">
-      <a href="https://beian.miit.gov.cn" target="_blank">备案号：xxxxxxxx</a>
+      <a href="https://beian.miit.gov.cn" target="_blank">备案号：粤ICP备2024241309号</a>
       <div class="login-footer-item-2">
         <a href="https://www.beian.gov.cn/portal/registerSystemInfo?recordcode=11010802026719" target="_blank">
           <img src="@/assets/login/police.png" style="vertical-align: middle" />
-          <span>粤公网安备：xxxxxxxx</span>
+          <span>粤公网安备：粤ICP备2024241309号</span>
         </a>
       </div>
     </div>
@@ -167,6 +152,7 @@ const handleLogin = () => {
     font-size: 12px;
     color: #8a919f;
   }
+
   .login-footer-item-2 {
     display: inline-block;
     margin-left: 20px;

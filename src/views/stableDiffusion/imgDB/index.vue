@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref, reactive } from "vue"
 // import axios from "axios"
+// import axios from "axios"
 import { useImgDB } from "./hooks/useImgDB"
 import { useDevice } from "@/hooks/useDevice"
 import { getSDAuth } from "@/utils/cache/local-storage"
@@ -18,6 +19,16 @@ const { getImgNameList, addImgScore } = useImgDB()
 //     "Access-Control-Allow-Headers": "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
 //   }
 // })
+// const imagesInstance = axios.create({
+//   baseURL: "/images",
+//   timeout: 30000,
+//   responseType: "blob",
+//   headers: {
+//     "Access-Control-Allow-Origin": "*",
+//     "Access-Control-Allow-Methods": "GET, POST",
+//     "Access-Control-Allow-Headers": "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+//   }
+// })
 
 const index = ref(0)
 const imgList = ref<string[]>([])
@@ -25,10 +36,11 @@ const imgSrc = ref("")
 const loading = ref(false)
 const getImg = async () => {
   try {
+    imgSrc.value = "http://eobeans.top/images/" + imgList.value[index.value]
     // loading.value = true
     // window.URL.revokeObjectURL(imgSrc.value)
     // const res: any = await imagesInstance.get(imgList.value[index.value])
-    imgSrc.value = "http://eobeans.top/images/" + imgList.value[index.value]
+    // imgSrc.value = window.URL.createObjectURL(res.data)
   } catch (err) {
     console.log(err)
   } finally {
