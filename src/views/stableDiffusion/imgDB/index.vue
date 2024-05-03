@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, reactive } from "vue"
-import axios from "axios"
+// import axios from "axios"
 import { useImgDB } from "./hooks/useImgDB"
 import { useDevice } from "@/hooks/useDevice"
 import { getSDAuth } from "@/utils/cache/local-storage"
@@ -8,16 +8,16 @@ import { getSDAuth } from "@/utils/cache/local-storage"
 const { isMobile } = useDevice()
 const { getImgNameList, addImgScore } = useImgDB()
 
-const imagesInstance = axios.create({
-  baseURL: "/images",
-  timeout: 30000,
-  responseType: "blob",
-  headers: {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST",
-    "Access-Control-Allow-Headers": "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
-  }
-})
+// const imagesInstance = axios.create({
+//   baseURL: "/images",
+//   timeout: 30000,
+//   responseType: "blob",
+//   headers: {
+//     "Access-Control-Allow-Origin": "*",
+//     "Access-Control-Allow-Methods": "GET, POST",
+//     "Access-Control-Allow-Headers": "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+//   }
+// })
 
 const index = ref(0)
 const imgList = ref<string[]>([])
@@ -25,10 +25,10 @@ const imgSrc = ref("")
 const loading = ref(false)
 const getImg = async () => {
   try {
-    loading.value = true
-    window.URL.revokeObjectURL(imgSrc.value)
-    const res: any = await imagesInstance.get(imgList.value[index.value])
-    imgSrc.value = window.URL.createObjectURL(res.data)
+    // loading.value = true
+    // window.URL.revokeObjectURL(imgSrc.value)
+    // const res: any = await imagesInstance.get(imgList.value[index.value])
+    imgSrc.value = "http://eobeans.top/images/" + imgList.value[index.value]
   } catch (err) {
     console.log(err)
   } finally {
@@ -56,6 +56,27 @@ const addScore = async () => {
   scoreData.score = 0
   getImg()
 }
+
+document.addEventListener("keypress", async function (event) {
+  const keyNum = event.keyCode
+  if ([49, 50, 51, 52, 53].includes(keyNum)) {
+    scoreData.filename = imgList.value[index.value]
+    if (keyNum == 49) {
+      scoreData.score = 1
+    } else if (keyNum == 50) {
+      scoreData.score = 2
+    } else if (keyNum == 51) {
+      scoreData.score = 3
+    } else if (keyNum == 52) {
+      scoreData.score = 4
+    } else if (keyNum == 53) {
+      scoreData.score = 5
+    }
+    await addImgScore(scoreData)
+    index.value++
+    getImg()
+  }
+})
 </script>
 
 <template>

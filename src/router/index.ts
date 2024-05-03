@@ -73,11 +73,19 @@ export const constantRoutes: RouteRecordRaw[] = [
     },
     children: [
       {
+        path: "gallery",
+        component: () => import("@/views/stableDiffusion/gallery/index.vue"),
+        name: "galleryPermission",
+        meta: {
+          title: "图库"
+        }
+      },
+      {
         path: "imgDB",
         component: () => import("@/views/stableDiffusion/imgDB/index.vue"),
         name: "imgDBPermission",
         meta: {
-          title: "图库"
+          title: "图片评价"
         }
       },
       {

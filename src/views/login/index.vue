@@ -89,6 +89,15 @@ const handleLogin = () => {
         </el-form>
       </div>
     </div>
+    <div class="login-footer">
+      <a href="https://beian.miit.gov.cn" target="_blank">备案号：xxxxxxxx</a>
+      <div class="login-footer-item-2">
+        <a href="https://www.beian.gov.cn/portal/registerSystemInfo?recordcode=11010802026719" target="_blank">
+          <img src="@/assets/login/police.png" style="vertical-align: middle" />
+          <span>粤公网安备：xxxxxxxx</span>
+        </a>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -100,12 +109,14 @@ const handleLogin = () => {
   align-items: center;
   width: 100%;
   min-height: 100%;
+
   .theme-switch {
     position: fixed;
     top: 5%;
     right: 5%;
     cursor: pointer;
   }
+
   .login-card {
     width: 480px;
     max-width: 90%;
@@ -113,20 +124,25 @@ const handleLogin = () => {
     box-shadow: 0 0 10px #dcdfe6;
     background-color: #fff;
     overflow: hidden;
+
     .title {
       display: flex;
       justify-content: center;
       align-items: center;
       height: 150px;
+
       img {
         height: 100%;
       }
     }
+
     .content {
       padding: 20px 50px 50px 50px;
+
       :deep(.el-input-group__append) {
         padding: 0;
         overflow: hidden;
+
         .el-image {
           width: 100px;
           height: 40px;
@@ -136,11 +152,24 @@ const handleLogin = () => {
           text-align: center;
         }
       }
+
       .el-button {
         width: 100%;
         margin-top: 10px;
       }
     }
+  }
+
+  .login-footer {
+    position: absolute;
+    bottom: 10px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #8a919f;
+  }
+  .login-footer-item-2 {
+    display: inline-block;
+    margin-left: 20px;
   }
 }
 </style>
