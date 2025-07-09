@@ -97,6 +97,27 @@ export const constantRoutes: RouteRecordRaw[] = [
         }
       }
     ]
+  },
+  {
+    path: "/marketAnalysis",
+    component: Layouts,
+    redirect: "/marketAnalysis/dashboard",
+    name: "marketAnalysis",
+    meta: {
+      title: "市场分析",
+      svgIcon: "lock",
+      alwaysShow: true // 将始终显示根菜单
+    },
+    children: [
+      {
+        path: "dashboard",
+        component: () => import("@/views/marketAnalysis/index.vue"),
+        name: "marketAnalysisDashboard",
+        meta: {
+          title: "总体分析"
+        }
+      },
+    ]
   }
   // {
   //   path: "/unocss",
